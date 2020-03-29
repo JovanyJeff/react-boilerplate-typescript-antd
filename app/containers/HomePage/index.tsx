@@ -1,121 +1,70 @@
-/*
- * HomePage
- *
- * This is the first thing users see of our App, at the '/' route
- */
-
-import React, { useEffect } from 'react';
-import { Helmet } from 'react-helmet-async';
+import * as React from 'react';
 import { FormattedMessage } from 'react-intl';
-import { useDispatch, useSelector } from 'react-redux';
-import { createStructuredSelector } from 'reselect';
-
-// import { useInjectReducer } from 'utils/injectReducer';
-// import { useInjectSaga } from 'utils/injectSaga';
-import { useInjectReducer, useInjectSaga } from 'utils/redux-injectors';
-
-import {
-  makeSelectError,
-  makeSelectLoading,
-  makeSelectRepos,
-} from 'containers/App/selectors';
-import H2 from 'components/H2';
-import ReposList from 'components/ReposList';
-import AtPrefix from './AtPrefix';
-import CenteredSection from './CenteredSection';
-import Form from './Form';
-import Input from './Input';
-import Section from './Section';
 import messages from './messages';
-import { loadRepos } from '../App/actions';
-import { changeUsername } from './actions';
-import { makeSelectUsername } from './selectors';
-import reducer from './reducer';
-import saga from './saga';
+import { Layout, Menu } from 'antd';
+import {
+  MenuUnfoldOutlined,
+  MenuFoldOutlined,
+  UserOutlined,
+  VideoCameraOutlined,
+  UploadOutlined,
+} from '@ant-design/icons';
 
-const key = 'home';
-
-const stateSelector = createStructuredSelector({
-  repos: makeSelectRepos(),
-  username: makeSelectUsername(),
-  loading: makeSelectLoading(),
-  error: makeSelectError(),
-});
+const { Header, Sider, Content } = Layout;
 
 export default function HomePage() {
-  const { repos, username, loading, error } = useSelector(stateSelector);
+  const [collapsed, setCollapsed] = React.useState(false);
 
-  const dispatch = useDispatch();
-
-  // Not gonna declare event types here. No need. any is fine
-  const onChangeUsername = (evt: any) =>
-    dispatch(changeUsername(evt.target.value));
-  const onSubmitForm = (evt?: any) => {
-    if (evt !== undefined && evt.preventDefault) {
-      evt.preventDefault();
-    }
-    if (!username) {
-      return;
-    }
-    dispatch(loadRepos());
-  };
-
-  useInjectReducer({ key: key, reducer: reducer });
-  useInjectSaga({ key: key, saga: saga });
-
-  useEffect(() => {
-    // When initial state username is not null, submit the form to load repos
-    if (username && username.trim().length > 0) {
-      onSubmitForm();
-    }
-  }, []);
-
-  const reposListProps = {
-    loading: loading,
-    error: error,
-    repos: repos,
+  const onToggle = () => {
+    setCollapsed(!collapsed);
   };
 
   return (
-    <article>
-      <Helmet>
-        <title>Home Page</title>
-        <meta
-          name="description"
-          content="A React.js Boilerplate application homepage"
-        />
-      </Helmet>
-      <div>
-        <CenteredSection>
-          <H2>
-            <FormattedMessage {...messages.startProjectHeader} />
-          </H2>
-          <p>
-            <FormattedMessage {...messages.startProjectMessage} />
-          </p>
-        </CenteredSection>
-        <Section>
-          <H2>
-            <FormattedMessage {...messages.trymeHeader} />
-          </H2>
-          <Form onSubmit={onSubmitForm}>
-            <label htmlFor="username">
-              <FormattedMessage {...messages.trymeMessage} />
-              <AtPrefix>
-                <FormattedMessage {...messages.trymeAtPrefix} />
-              </AtPrefix>
-              <Input
-                id="username"
-                type="text"
-                placeholder="mxstbr"
-                value={username}
-                onChange={onChangeUsername}
-              />
-            </label>
-          </Form>
-          <ReposList {...reposListProps} />
-        </Section>
-      </div>
-    </article>
+    <div id="layout-custom-trigger">
+      <Layout style={{ minHeight: '100vh' }}>
+        <Sider trigger={null} collapsible collapsed={collapsed}>
+          {!collapsed ? 
+            <div className="logo" style={{textAlign:'center', color: '#fff', fontSize: '15px', padding: '5px'}}>
+              React Boilerplate 4.1
+            </div> : 
+            <div className="logo" style={{textAlign:'center', color: '#fff', fontSize: '15px', padding: '5px'}}>
+              RB
+            </div>
+          }
+          <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
+            <Menu.Item key="1">
+              <UserOutlined />
+              <span>nav 1</span>
+            </Menu.Item>
+            <Menu.Item key="2">
+              <VideoCameraOutlined />
+              <span>nav 2</span>
+            </Menu.Item>
+            <Menu.Item key="3">
+              <UploadOutlined />
+              <span>nav 3</span>
+            </Menu.Item>
+          </Menu>
+        </Sider>
+        <Layout className="site-layout">
+          <Header className="site-layout-background" style={{ paddingLeft: '20px' }}>
+            {React.createElement(collapsed ? MenuUnfoldOutlined : MenuFoldOutlined, {
+              className: 'trigger',
+              onClick: onToggle,
+            })}
+          </Header>
+          <Content
+            className="site-layout-background"
+            style={{
+              margin: '24px 16px',
+              padding: 24,
+              minHeight: 280,
+            }}
+          >
+            <FormattedMessage {...messages.header} />
+          </Content>
+        </Layout>
+      </Layout>
+    </div>
   );
 }
